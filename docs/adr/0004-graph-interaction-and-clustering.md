@@ -1,4 +1,4 @@
-# ADR 4: Graph Interaction and Hierarchical Clustering
+# ADR 0004: Graph Interaction and Hierarchical Clustering
 
 **Date:** 2026-06-02
 **Status:** Accepted

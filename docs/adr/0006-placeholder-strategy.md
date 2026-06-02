@@ -1,4 +1,4 @@
-# ADR 1: Scaffolding and Directory Placeholder Strategy
+# ADR 0006: Scaffolding and Directory Placeholder Strategy
 
 **Date:** 2026-06-02
 **Status:** Accepted

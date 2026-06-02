@@ -1,4 +1,4 @@
-# ADR 5: Asset Organization and Correction
+# ADR 0010: Asset Organization and Correction
 
 **Date:** 2026-06-02
 **Status:** Accepted

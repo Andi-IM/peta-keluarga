@@ -1,4 +1,4 @@
-# ADR 0010: State-Driven Clustering Stability
+# ADR 0015: State-Driven Clustering Stability
 
 ## Status
 Accepted

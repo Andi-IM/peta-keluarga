@@ -1,4 +1,4 @@
-# ADR 8: Runtime Stability and Defensive Canvas Interaction
+# ADR 0014: Runtime Stability and Defensive Canvas Interaction
 
 **Date:** 2026-06-02
 **Status:** Accepted

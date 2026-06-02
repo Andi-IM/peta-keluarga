@@ -1,4 +1,4 @@
-# ADR 2: Deployment Strategy and Build Optimization
+# ADR 0002: Deployment Strategy and Build Optimization
 
 **Date:** 2026-06-02
 **Status:** Accepted

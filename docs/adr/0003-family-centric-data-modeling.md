@@ -1,4 +1,4 @@
-# ADR 3: Family-Centric Data Modeling and Grouping
+# ADR 0003: Family-Centric Data Modeling and Grouping
 
 **Date:** 2026-06-02
 **Status:** Accepted

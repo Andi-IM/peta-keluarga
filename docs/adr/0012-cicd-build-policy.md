@@ -1,4 +1,4 @@
-# ADR 7: CI/CD Strategy and Build Policy
+# ADR 0012: CI/CD Strategy and Build Policy
 
 **Date:** 2026-06-02
 **Status:** Accepted

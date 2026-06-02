@@ -1,4 +1,4 @@
-# ADR 5: Component Organization and Styling System
+# ADR 0005: Component Organization and Styling System
 
 **Date:** 2026-06-02
 **Status:** Accepted

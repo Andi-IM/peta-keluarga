@@ -1,4 +1,4 @@
-# ADR 3: Network Visualization Architecture
+# ADR 0008: Network Visualization Architecture
 
 **Date:** 2026-06-02
 **Status:** Accepted

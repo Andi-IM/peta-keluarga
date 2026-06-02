@@ -1,4 +1,4 @@
-# ADR 1: Foundational Technology Stack and Project Structure
+# ADR 0001: Foundational Technology Stack and Project Structure
 
 **Date:** 2026-06-02
 **Status:** Accepted

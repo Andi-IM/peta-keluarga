@@ -1,4 +1,4 @@
-# ADR 9: Project Restructuring and Standardization
+# ADR 0013: Project Restructuring and Standardization
 
 **Date:** 2026-06-02
 **Status:** Accepted

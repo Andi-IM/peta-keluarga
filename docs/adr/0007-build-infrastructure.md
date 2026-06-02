@@ -1,4 +1,4 @@
-# ADR 2: Foundational Build Infrastructure
+# ADR 0007: Foundational Build Infrastructure
 
 **Date:** 2026-06-02
 **Status:** Accepted

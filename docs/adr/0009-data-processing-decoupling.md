@@ -1,4 +1,4 @@
-# ADR 4: Data Processing and Utility Decoupling
+# ADR 0009: Data Processing and Utility Decoupling
 
 **Date:** 2026-06-02
 **Status:** Accepted
