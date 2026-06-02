@@ -71,8 +71,11 @@ export function NetworkGraph({
   const initNetwork = useCallback(() => {
     if (!containerRef.current) return;
 
+    let isDestroyed = false;
+
     if (fitTimeoutRef.current) {
       clearTimeout(fitTimeoutRef.current);
+      fitTimeoutRef.current = null;
     }
 
     const nodesDataSet = new DataSet(nodes);
@@ -91,6 +94,7 @@ export function NetworkGraph({
     );
 
     const safeFit = () => {
+      if (isDestroyed) return;
       if (network && containerRef.current) {
         try {
           network.fit({ animation: true });
@@ -101,6 +105,7 @@ export function NetworkGraph({
     };
 
     network.once("afterDrawing", () => {
+      if (isDestroyed) return;
       setIsLoading(false);
       
       // Initially cluster all groups
@@ -116,6 +121,7 @@ export function NetworkGraph({
     });
 
     network.on("selectNode", (params) => {
+      if (isDestroyed) return;
       if (params.nodes.length > 0) {
         const nodeId = params.nodes[0] as string;
         
@@ -132,11 +138,13 @@ export function NetworkGraph({
     });
 
     network.on("deselectNode", () => {
+      if (isDestroyed) return;
       if (onNodeSelect) onNodeSelect(null);
       if (onClusterSelect) onClusterSelect(null);
     });
 
     network.on("doubleClick", (params) => {
+      if (isDestroyed) return;
       if (params.nodes.length > 0) {
         const nodeId = params.nodes[0] as string;
         
@@ -162,6 +170,12 @@ export function NetworkGraph({
     networkRef.current = network;
 
     return () => {
+      isDestroyed = true;
+      if (fitTimeoutRef.current) {
+        clearTimeout(fitTimeoutRef.current);
+        fitTimeoutRef.current = null;
+      }
+      networkRef.current = null;
       network.destroy();
     };
   }, [nodes, edges, clusters, options, onNodeSelect, onClusterSelect, clusteredView, expandedClusters]);
@@ -209,43 +223,33 @@ export function NetworkGraph({
   const isNodeCluster = (nodeId: string): boolean => {
     if (!networkRef.current) return false;
     try {
-      return networkRef.current.isCluster(nodeId);
+      // Check if the node exists in the network first to avoid "Node does not exist" error
+      // which is thrown by isCluster if the nodeId is not found.
+      const positions = networkRef.current.getPositions([nodeId]);
+      if (positions[nodeId]) {
+        return networkRef.current.isCluster(nodeId);
+      }
+      return false;
     } catch {
       return false;
     }
   };
 
   const handleClusterAll = () => {
-    if (networkRef.current && nodesDataSetRef.current) {
-      clusters.forEach((cluster) => {
-        try {
-          if (!isNodeCluster(cluster.id)) {
-            clusterNodes(networkRef.current!, cluster, nodesDataSetRef.current!);
-          }
-        } catch {
-          // Ignore errors for individual clusters
-        }
-      });
+    if (networkRef.current) {
       setExpandedClusters(new Set());
       setClusteredView(true);
-      setTimeout(() => networkRef.current?.fit({ animation: true }), 100);
+      // We don't need to manually cluster here because changing clusteredView 
+      // will trigger initNetwork to re-run and cluster everything.
     }
   };
 
   const handleExpandAll = () => {
     if (networkRef.current) {
-      clusters.forEach((cluster) => {
-        try {
-          if (isNodeCluster(cluster.id)) {
-            networkRef.current!.openCluster(cluster.id);
-          }
-        } catch {
-          // Cluster might not exist
-        }
-      });
       setExpandedClusters(new Set(clusters.map((c) => c.id)));
       setClusteredView(false);
-      setTimeout(() => networkRef.current?.fit({ animation: true }), 100);
+      // We don't need to manually expand here because changing clusteredView 
+      // will trigger initNetwork to re-run and create an unclustered view.
     }
   };
 
