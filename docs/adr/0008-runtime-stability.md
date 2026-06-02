@@ -9,7 +9,7 @@ During development, the `vis-network` graph was prone to `TypeError: Cannot read
 ## Decision
 We implemented a robust defensive strategy in `components/network-graph.tsx`:
 1. **Guarded Fit Function:** Created a `safeFit` helper that verifies the existence of both the `network` instance and its DOM `containerRef.current` before executing.
-2. **State Validation:** Added a check for `network.isDestroyed` to ensure we don't interact with a stale instance.
+2. **Lifecycle Management:** Rely on explicit null checks and a `try/catch` block for safety. (Note: The `isDestroyed` check was removed as it is not part of the public `vis-network` API).
 3. **Timeout Lifecycle Management:** Used a `fitTimeoutRef` to track and clear any pending `setTimeout` calls when the component unmounts or re-initializes.
 4. **Exception Handling:** Wrapped the `.fit()` call in a `try/catch` block to prevent any remaining edge cases from crashing the application.
 

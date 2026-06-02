@@ -91,7 +91,7 @@ export function NetworkGraph({
     );
 
     const safeFit = () => {
-      if (network && containerRef.current && !network.isDestroyed) {
+      if (network && containerRef.current) {
         try {
           network.fit({ animation: true });
         } catch (e) {
