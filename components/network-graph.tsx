@@ -66,8 +66,14 @@ export function NetworkGraph({
   const [clusteredView, setClusteredView] = useState(true);
   const [expandedClusters, setExpandedClusters] = useState<Set<string>>(new Set());
 
+  const fitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const initNetwork = useCallback(() => {
     if (!containerRef.current) return;
+
+    if (fitTimeoutRef.current) {
+      clearTimeout(fitTimeoutRef.current);
+    }
 
     const nodesDataSet = new DataSet(nodes);
     const edgesDataSet = new DataSet(edges);
@@ -84,6 +90,16 @@ export function NetworkGraph({
       mergedOptions
     );
 
+    const safeFit = () => {
+      if (network && containerRef.current && !network.isDestroyed) {
+        try {
+          network.fit({ animation: true });
+        } catch (e) {
+          console.warn("Fit failed:", e);
+        }
+      }
+    };
+
     network.once("afterDrawing", () => {
       setIsLoading(false);
       
@@ -96,9 +112,7 @@ export function NetworkGraph({
         });
       }
       
-      setTimeout(() => {
-        network.fit({ animation: true });
-      }, 100);
+      safeFit();
     });
 
     network.on("selectNode", (params) => {
