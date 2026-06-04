@@ -78,12 +78,16 @@ export function processNetworkData(): NetworkData {
   
   // Create cluster info
   const clusters: ClusterInfo[] = [];
-  const clusterPositions = calculateClusterPositions(clusterMembers.size);
   
-  let clusterIndex = 0;
-  clusterMembers.forEach((members, groupId) => {
+  // Sort cluster groups by member count descending so larger families occupy the center
+  const sortedClusters = Array.from(clusterMembers.entries())
+    .sort((a, b) => b[1].length - a[1].length);
+    
+  const clusterPositions = calculateClusterPositions(sortedClusters.length);
+  
+  sortedClusters.forEach(([groupId, members], index) => {
     const color = groupColorMap.get(groupId) || "#6366f1";
-    const pos = clusterPositions[clusterIndex];
+    const pos = clusterPositions[index];
     
     clusters.push({
       id: `cluster-${groupId}`,
@@ -93,8 +97,6 @@ export function processNetworkData(): NetworkData {
       x: pos.x,
       y: pos.y,
     });
-    
-    clusterIndex++;
   });
   
   // Create nodes with colors based on family groups
@@ -103,7 +105,8 @@ export function processNetworkData(): NetworkData {
   nodeMap.forEach((data, name) => {
     const groupId = familyGroups.get(name) || 0;
     const color = groupColorMap.get(groupId) || "#6366f1";
-    const size = Math.min(10 + data.connections * 2, 40);
+    // Scale node size based on connections, matching star magnitude
+    const size = Math.min(12 + data.connections * 2.5, 45);
     
     // Find cluster position
     const clusterIdx = clusters.findIndex((c) => c.members.includes(name));
@@ -118,49 +121,68 @@ export function processNetworkData(): NetworkData {
     const nodeX = (cluster?.x || 0) + Math.cos(angle) * spreadRadius * (0.5 + Math.random() * 0.5);
     const nodeY = (cluster?.y || 0) + Math.sin(angle) * spreadRadius * (0.5 + Math.random() * 0.5);
     
+    // Stars have a bright core (white) and a glowing colored corona (border & shadow)
     nodes.push({
       id: name,
       label: name,
       x: nodeX,
       y: nodeY,
       color: {
-        background: color,
-        border: adjustColor(color, -30),
+        background: "#ffffff", // Star core
+        border: color,         // Colored corona
         highlight: {
-          background: adjustColor(color, 20),
-          border: adjustColor(color, -20),
+          background: "#ffffff",
+          border: adjustColor(color, 20),
         },
+        hover: {
+          background: "#ffffff",
+          border: adjustColor(color, 10),
+        }
       },
       size,
       font: {
         size: 12,
-        color: "#1f2937",
+        color: "rgba(255, 255, 255, 0.85)",
+        face: "system-ui, -apple-system, sans-serif",
+        strokeWidth: 2,
+        strokeColor: "#030014", // dark outline for readability
+      },
+      shadow: {
+        enabled: true,
+        color: color, // glow matching the family color
+        size: Math.min(8 + data.connections * 3, 25),
+        x: 0,
+        y: 0,
       },
       group: groupId.toString(),
     });
   });
   
-  // Create edges
+  // Create edges as constellation lines
   familyData.forEach((relation, index) => {
+    const isSpouse = relation.relationship_type === "pasangan";
+    const baseColor = getConstellationEdgeColor(relation.relationship_type, 0.25);
+    
     edges.push({
       id: `edge-${index}`,
       from: relation.person,
       to: relation.related_to,
       label: relation.relationship_type,
       color: {
-        color: relationshipColors[relation.relationship_type] || "#9ca3af",
-        highlight: relationshipColors[relation.relationship_type] || "#9ca3af",
+        color: baseColor,
+        highlight: getConstellationEdgeColor(relation.relationship_type, 0.9),
+        hover: getConstellationEdgeColor(relation.relationship_type, 0.7),
       },
       font: {
         size: 10,
-        color: "#6b7280",
+        color: "rgba(255, 255, 255, 0.75)",
         strokeWidth: 2,
-        strokeColor: "#ffffff",
+        strokeColor: "#030014",
       },
       arrows: {
         to: {
-          enabled: true,
-          scaleFactor: 0.5,
+          enabled: !isSpouse, // spouse relationships have no direction
+          scaleFactor: 0.4,
         },
       },
       smooth: {
@@ -168,6 +190,8 @@ export function processNetworkData(): NetworkData {
         type: "curvedCW",
         roundness: 0.2,
       },
+      dashes: isSpouse, // dotted/dashed lines for spouses, typical for star maps
+      width: isSpouse ? 1.2 : 1,
     });
   });
   
@@ -177,17 +201,18 @@ export function processNetworkData(): NetworkData {
 function calculateClusterPositions(count: number): { x: number; y: number }[] {
   const positions: { x: number; y: number }[] = [];
   
-  // Use a grid-like layout for clusters
-  const cols = Math.ceil(Math.sqrt(count));
-  const spacing = 600;
+  // Fermat's Spiral (Golden Spiral) to distribute star systems organically in a circular disk
+  const goldenAngle = 137.5 * (Math.PI / 180);
+  const spacingConstant = 180; // distance spacing between spirals
   
   for (let i = 0; i < count; i++) {
-    const row = Math.floor(i / cols);
-    const col = i % cols;
+    // Square root distributes points evenly across a circular area
+    const r = spacingConstant * Math.sqrt(i + 0.5) * 1.35;
+    const theta = i * goldenAngle;
     
     positions.push({
-      x: col * spacing - ((cols - 1) * spacing) / 2,
-      y: row * spacing - ((Math.ceil(count / cols) - 1) * spacing) / 2,
+      x: r * Math.cos(theta),
+      y: r * Math.sin(theta),
     });
   }
   
@@ -295,4 +320,14 @@ export function getNodeStats() {
       return acc;
     }, {} as Record<string, number>),
   };
+}
+
+function getConstellationEdgeColor(type: string, alpha: number = 0.25): string {
+  const colors: Record<string, string> = {
+    bapak: `rgba(56, 189, 248, ${alpha})`,   // bright sky blue
+    ibu: `rgba(244, 114, 182, ${alpha})`,     // pink
+    pasangan: `rgba(52, 211, 153, ${alpha})`, // emerald green
+    anak: `rgba(251, 191, 36, ${alpha})`,     // amber/gold
+  };
+  return colors[type] || `rgba(229, 231, 235, ${alpha})`;
 }
