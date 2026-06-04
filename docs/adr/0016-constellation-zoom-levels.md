@@ -34,3 +34,6 @@ We will transition the graph visualization to a space-inspired constellation the
 - **Micro-Detail Access**: Text labels and relationship types appear automatically as the user zooms in on a specific family branch.
 - **Premium Aesthetics**: The high-contrast, glowing neon stars on a cosmic background provide an engaging, modern, and polished user experience.
 - **Performance**: The network library only redraws node/edge properties when transitioning between the three zoom states, preventing constant updates during continuous zoom gestures.
+
+## Superseded
+* **ADR 8 (Partial):** Updates the styling and layout algorithms of the network visualization graph.

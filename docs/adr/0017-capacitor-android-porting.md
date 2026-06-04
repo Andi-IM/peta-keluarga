@@ -36,3 +36,6 @@ We will integrate CapacitorJS into the project, configure Next.js for a static e
 - **Offline Capabilities**: Since Next.js is statically exported into the native assets, the app can run fully offline on Android devices.
 - **Client-Side Compatibility Requirement**: All pages and interactive layouts must remain client-side compatible (i.e. utilizing standard client-side components and avoiding dynamic Server-Side Rendering (SSR) or server-only dynamic routes).
 - **Simplified Development Cycle**: Web assets can be rebuilt and synchronized to the native app with a single `pnpm run cap:sync` command.
+
+## Superseded
+* **ADR 2 (Partial):** Modifies the build output target of the Next.js application to static HTML exports ('export') to facilitate native offline loading.

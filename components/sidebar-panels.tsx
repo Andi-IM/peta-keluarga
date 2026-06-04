@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { familyData, relationshipLabels, relationshipColors } from "@/lib/family-data";
+import { familyData, relationshipLabels, relationshipColors, personRelationsLookup, allUniqueNames } from "@/lib/family-data";
 import type { ClusterInfo } from "@/lib/network-utils";
 
 interface NodeInfoPanelProps {
@@ -12,39 +12,15 @@ export function NodeInfoPanel({ selectedNode }: NodeInfoPanelProps) {
   const nodeInfo = useMemo(() => {
     if (!selectedNode) return null;
 
-    const asSubject = familyData.filter((r) => r.person === selectedNode);
-    const asObject = familyData.filter((r) => r.related_to === selectedNode);
-
-    const fathers = asSubject
-      .filter((r) => r.relationship_type === "bapak")
-      .map((r) => r.related_to);
-    const mothers = asSubject
-      .filter((r) => r.relationship_type === "ibu")
-      .map((r) => r.related_to);
-    const spouses = [
-      ...asSubject
-        .filter((r) => r.relationship_type === "pasangan")
-        .map((r) => r.related_to),
-      ...asObject
-        .filter((r) => r.relationship_type === "pasangan")
-        .map((r) => r.person),
-    ];
-    const children = [
-      ...asSubject
-        .filter((r) => r.relationship_type === "anak")
-        .map((r) => r.related_to),
-      ...asObject
-        .filter((r) => r.relationship_type === "bapak" || r.relationship_type === "ibu")
-        .map((r) => r.person),
-    ];
+    const indexed = personRelationsLookup[selectedNode] || { fathers: [], mothers: [], spouses: [], children: [] };
 
     return {
       name: selectedNode,
-      fathers: [...new Set(fathers)],
-      mothers: [...new Set(mothers)],
-      spouses: [...new Set(spouses)],
-      children: [...new Set(children)],
-      totalConnections: asSubject.length + asObject.length,
+      fathers: indexed.fathers,
+      mothers: indexed.mothers,
+      spouses: indexed.spouses,
+      children: indexed.children,
+      totalConnections: indexed.fathers.length + indexed.mothers.length + indexed.spouses.length + indexed.children.length,
     };
   }, [selectedNode]);
 
@@ -172,14 +148,7 @@ export function SearchPanel({ onSearch }: SearchPanelProps) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
-  const allNames = useMemo(() => {
-    const names = new Set<string>();
-    familyData.forEach((r) => {
-      names.add(r.person);
-      names.add(r.related_to);
-    });
-    return Array.from(names).sort();
-  }, []);
+  const allNames = allUniqueNames;
 
   const handleChange = (value: string) => {
     setQuery(value);

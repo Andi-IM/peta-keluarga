@@ -20,3 +20,6 @@ We will shift to a strictly state-driven approach for global clustering actions 
 -   **Stability**: Eliminates the "Node does not exist" crashes and log flooding.
 -   **Predictability**: The network state is always derived from React state, making it easier to reason about.
 -   **Performance**: While full re-initialization is slightly more expensive than incremental updates, for the current data scale (500+ nodes), it ensures correctness and avoids the complexity of manual delta management.
+
+## Superseded
+None

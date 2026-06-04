@@ -88,6 +88,7 @@ export function NetworkGraph({
   const networkRef = useRef<Network | null>(null);
   const nodesDataSetRef = useRef<DataSet<Node> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [clusteredView, setClusteredView] = useState(true);
   const [expandedClusters, setExpandedClusters] = useState<Set<string>>(new Set());
 
@@ -148,8 +149,11 @@ export function NetworkGraph({
       }
     };
 
-    network.once("afterDrawing", () => {
-      if (isDestroyed) return;
+    let loadingFinished = false;
+    const finishLoading = () => {
+      if (loadingFinished || isDestroyed) return;
+      loadingFinished = true;
+      setLoadingProgress(100);
       setIsLoading(false);
       
       // Initially cluster all groups
@@ -171,6 +175,21 @@ export function NetworkGraph({
       updateLabelsForZoom(initialZoomLevel, nodesDataSet, edgesDataSet, nodes, edges);
 
       safeFit();
+    };
+
+    network.on("stabilizationProgress", (params) => {
+      if (isDestroyed) return;
+      const percent = Math.round((params.iterations / params.total) * 100);
+      const cappedPercent = Math.min(percent, 99);
+      setLoadingProgress((prev) => Math.max(prev, cappedPercent));
+    });
+
+    network.once("stabilized", () => {
+      finishLoading();
+    });
+
+    network.once("afterDrawing", () => {
+      finishLoading();
     });
 
     network.on("zoom", () => {
@@ -435,9 +454,23 @@ export function NetworkGraph({
 
       {isLoading && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#030014]/90 backdrop-blur-md">
-          <div className="text-center text-slate-200">
-            <div className="mb-3 text-lg font-medium tracking-wide">Memuat Rasi Bintang...</div>
-            <div className="animate-spin h-8 w-8 border-4 border-sky-500 border-t-transparent rounded-full mx-auto" />
+          <div className="text-center text-slate-200 max-w-xs w-full px-6">
+            <div className="mb-4 text-lg font-medium tracking-wide text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.15)]">
+              Memuat Rasi Bintang...
+            </div>
+            
+            {/* Glassmorphic progress bar container */}
+            <div className="w-full h-2.5 bg-white/5 border border-white/10 rounded-full overflow-hidden relative shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)]">
+              {/* Progress fill */}
+              <div 
+                className="h-full bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.6)] transition-all duration-300 ease-out"
+                style={{ width: `${loadingProgress}%` }}
+              />
+            </div>
+            
+            <div className="mt-3 text-xs text-sky-400/80 font-mono tracking-wider">
+              {loadingProgress}%
+            </div>
           </div>
         </div>
       )}
