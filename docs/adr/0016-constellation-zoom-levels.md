@@ -1,12 +1,15 @@
 # ADR 0016: Constellation Visuals and Dynamic Zoom-Based Labeling
 
 ## Status
+
 Accepted
 
 ## Context
+
 The family network graph represents complex relationships and multiple family clusters. The previous visualization used a standard layout with solid edge colors and static label visibility. When users zoomed out to view the entire family structure, the text labels of all nodes overlapped and cluttered the screen, making it impossible to identify macro hierarchy patterns or the geometric layout of the family groups. To solve this, we need a theme that is visually clean at a distance and highly detailed when viewed closely, evoking a "constellation" (rasi bintang) feel where clusters form star systems.
 
 ## Decision
+
 We will transition the graph visualization to a space-inspired constellation theme, layout nodes organically in a spiral celestial dome, and implement state-driven, dynamic levels of detail based on zoom scale.
 
 1. **Space Theme Canvas**: Set the graph canvas background to a deep space environment (gradient, blur nebulas, and an SVG starfield). Make the `vis-network` canvas transparent to overlay beautifully on top of this background.
@@ -30,10 +33,12 @@ We will transition the graph visualization to a space-inspired constellation the
    Only trigger updates to `nodesDataSet` and `edgesDataSet` when the scale crosses a zoom threshold boundary, ensuring standard zooming and dragging remain fluid (60fps). Disable the loading overlay spinner only when the physics engine completely stabilizes (`stabilizationFinished`).
 
 ## Consequences
+
 - **Improved Hierarchy Recognition**: Macro patterns are instantly recognizable when zoomed out because text clutter is eliminated, highlighting the geometric shape of the family tree.
 - **Micro-Detail Access**: Text labels and relationship types appear automatically as the user zooms in on a specific family branch.
 - **Premium Aesthetics**: The high-contrast, glowing neon stars on a cosmic background provide an engaging, modern, and polished user experience.
 - **Performance**: The network library only redraws node/edge properties when transitioning between the three zoom states, preventing constant updates during continuous zoom gestures.
 
 ## Superseded
-* **ADR 8 (Partial):** Updates the styling and layout algorithms of the network visualization graph.
+
+- **ADR 8 (Partial):** Updates the styling and layout algorithms of the network visualization graph.
