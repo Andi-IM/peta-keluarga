@@ -1,12 +1,15 @@
 # ADR 0017: Android Native Porting with CapacitorJS
 
 ## Status
+
 Accepted
 
 ## Context
+
 The `peta-keluarga` application is currently a Next.js web application. To expand user accessibility and provide a native mobile experience on Android, we need to port the application to Android. The application relies on client-side interactive rendering (vis-network graph visualization), which requires standard web APIs. We selected CapacitorJS due to its seamless integration with modern web applications and native plugins, enabling the web app to run directly inside a native Android WebView without complex changes.
 
 ## Decision
+
 We will integrate CapacitorJS into the project, configure Next.js for a static export, and establish a native Android build workflow.
 
 1. **Next.js Static Export Configuration**:
@@ -32,10 +35,12 @@ We will integrate CapacitorJS into the project, configure Next.js for a static e
      - `"cap:run"`: Runs `cap run android` to deploy and run the app directly on a connected device/emulator.
 
 ## Consequences
+
 - **Unified Codebase**: Both the web and native Android apps are built from a single codebase, preserving the Stellarium-style dark space theme, celestial grid, and constellation physics layout across all platforms.
 - **Offline Capabilities**: Since Next.js is statically exported into the native assets, the app can run fully offline on Android devices.
 - **Client-Side Compatibility Requirement**: All pages and interactive layouts must remain client-side compatible (i.e. utilizing standard client-side components and avoiding dynamic Server-Side Rendering (SSR) or server-only dynamic routes).
 - **Simplified Development Cycle**: Web assets can be rebuilt and synchronized to the native app with a single `pnpm run cap:sync` command.
 
 ## Superseded
-* **ADR 2 (Partial):** Modifies the build output target of the Next.js application to static HTML exports ('export') to facilitate native offline loading.
+
+- **ADR 2 (Partial):** Modifies the build output target of the Next.js application to static HTML exports ('export') to facilitate native offline loading.
