@@ -4,7 +4,7 @@ export interface FamilyRelation {
   relationship_type: "bapak" | "ibu" | "pasangan" | "anak";
 }
 
-export const familyData: FamilyRelation[] = [
+const rawFamilyData: FamilyRelation[] = [
   { person: "Meutia Hatta", related_to: "Mohammad Hatta", relationship_type: "bapak" },
   { person: "Halida Hatta", related_to: "Mohammad Hatta", relationship_type: "bapak" },
   { person: "Gemala Hatta", related_to: "Mohammad Hatta", relationship_type: "bapak" },
@@ -506,6 +506,94 @@ export const familyData: FamilyRelation[] = [
   { person: "Irwan Prayitno", related_to: "Nevi Zuairina", relationship_type: "pasangan" },
   { person: "Lenggogeni Faruk", related_to: "Halilintar Anofial Asmid", relationship_type: "pasangan" },
 ];
+
+function getNormalizedData(raw: FamilyRelation[]): FamilyRelation[] {
+  const normalized: FamilyRelation[] = [];
+  const seenPairs = new Set<string>();
+
+  raw.forEach((rel) => {
+    // 1. Skip "anak" relations as they are fully redundant with "bapak" / "ibu"
+    if (rel.relationship_type === "anak") {
+      return;
+    }
+
+    const p = rel.person.trim();
+    const r = rel.related_to.trim();
+    const t = rel.relationship_type;
+
+    let pairKey = "";
+    if (t === "pasangan") {
+      // For spouses, A-B is the same as B-A. Sort alphabetically to create a unique key.
+      const sorted = [p, r].sort();
+      pairKey = `pasangan:${sorted[0]}:${sorted[1]}`;
+    } else {
+      pairKey = `${t}:${p}:${r}`;
+    }
+
+    if (!seenPairs.has(pairKey)) {
+      seenPairs.add(pairKey);
+      normalized.push({
+        person: p,
+        related_to: r,
+        relationship_type: t
+      });
+    }
+  });
+
+  return normalized;
+}
+
+export const familyData = getNormalizedData(rawFamilyData);
+
+export interface PersonRelations {
+  fathers: string[];
+  mothers: string[];
+  spouses: string[];
+  children: string[];
+}
+
+export const personRelationsLookup: Record<string, PersonRelations> = {};
+
+const namesSet = new Set<string>();
+
+function getOrCreateRelations(name: string): PersonRelations {
+  if (!personRelationsLookup[name]) {
+    personRelationsLookup[name] = {
+      fathers: [],
+      mothers: [],
+      spouses: [],
+      children: []
+    };
+  }
+  return personRelationsLookup[name];
+}
+
+// Populate pre-indexed lookup map using normalized data
+familyData.forEach((rel) => {
+  const p = rel.person;
+  const r = rel.related_to;
+  const type = rel.relationship_type;
+
+  namesSet.add(p);
+  namesSet.add(r);
+
+  const pRels = getOrCreateRelations(p);
+  const rRels = getOrCreateRelations(r);
+
+  if (type === "bapak") {
+    if (!pRels.fathers.includes(r)) pRels.fathers.push(r);
+    if (!rRels.children.includes(p)) rRels.children.push(p);
+  } else if (type === "ibu") {
+    if (!pRels.mothers.includes(r)) pRels.mothers.push(r);
+    if (!rRels.children.includes(p)) rRels.children.push(p);
+  } else if (type === "pasangan") {
+    if (!pRels.spouses.includes(r)) pRels.spouses.push(r);
+    if (!rRels.spouses.includes(p)) rRels.spouses.push(p);
+  }
+});
+
+// Export unique sorted names
+export const allUniqueNames = Array.from(namesSet).sort();
 
 export const relationshipLabels: Record<string, string> = {
   bapak: "Father",
